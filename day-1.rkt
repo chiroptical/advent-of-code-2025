@@ -31,22 +31,19 @@
     password))
 
 (define (point-and-turns p amt)
-  (let* ([direction (sgn amt)]
-         [abs-total (+ p (abs amt))]
-         [total (+ p amt)]
-         [turns (quotient total 100)]
-         [neg-turns (quotient abs-total 100)]
-         [next (new-point p amt)]
-         [not-zero (not (= p 0))])
-    (match direction
-      [-1
-       #:when (and not-zero (< abs-total 100) (>= (abs amt) p))
-       (cons next 1)]
-      [-1
-       #:when (and not-zero (< total 100) (> abs-total 100) (< (abs amt) p))
-       (cons next turns)]
-      [-1 (cons next neg-turns)]
-      [1 (cons next turns)])))
+  (let* ([summation (+ p amt)]
+         [next (modulo summation 100)])
+    (cond
+      ; moving right, simple quotient from summation
+      [(positive? amt) (cons next (quotient summation 100))]
+
+      ; moving left from zero, just use quotient from amt
+      [(and (zero? p) (negative? amt)) (cons next (quotient (abs amt) 100))]
+
+      ; hit zero or summation is negative, crossed zero add 1 to quotient of the summation
+      [(or (zero? summation) (negative? summation)) (cons next (+ 1 (quotient (abs summation) 100)))]
+
+      [else (cons next 0)])))
 
 (define (part-2 file)
   (let* ([lines (read-notes file)]
