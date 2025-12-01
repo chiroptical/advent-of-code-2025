@@ -32,12 +32,21 @@
 
 (define (point-and-turns p amt)
   (let* ([direction (sgn amt)]
+         [abs-total (+ p (abs amt))]
          [total (+ p amt)]
-         [quot (quotient total 100)]
-         [next (new-point p amt)])
-    (if (and (not (= p 0)) (= direction -1) (= quot 0) (>= (abs amt) p))
-        (cons next 1)
-        (cons next (abs quot)))))
+         [turns (quotient total 100)]
+         [neg-turns (quotient abs-total 100)]
+         [next (new-point p amt)]
+         [not-zero (not (= p 0))])
+    (match direction
+      [-1
+       #:when (and not-zero (< abs-total 100) (>= (abs amt) p))
+       (cons next 1)]
+      [-1
+       #:when (and not-zero (< total 100) (> abs-total 100) (< (abs amt) p))
+       (cons next turns)]
+      [-1 (cons next neg-turns)]
+      [1 (cons next turns)])))
 
 (define (part-2 file)
   (let* ([lines (read-notes file)]
@@ -67,7 +76,7 @@
   (check-equal? (point-and-turns 98 102) (cons 0 2))
   (check-equal? (point-and-turns 95 60) (cons 55 1))
   (check-equal? (point-and-turns 50 1000) (cons 50 10))
-  (check-equal? (point-and-turns 50 -1000) (cons 50 9))
+  (check-equal? (point-and-turns 50 -1000) (cons 50 10))
 
   (check-equal? (part-1 "inputs/day-1-test.txt") 3 "part 1 test")
   (check-equal? (part-1 "inputs/day-1.txt") 984 "part 1")
