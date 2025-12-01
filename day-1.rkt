@@ -77,6 +77,8 @@
   (check-equal? (point-and-turns 95 60) (cons 55 1))
   (check-equal? (point-and-turns 50 1000) (cons 50 10))
   (check-equal? (point-and-turns 50 -1000) (cons 50 10))
+  (check-equal? (point-and-turns 40 -150) (cons 90 2))
+  (check-equal? (point-and-turns 60 -150) (cons 10 1))
 
   (check-equal? (part-1 "inputs/day-1-test.txt") 3 "part 1 test")
   (check-equal? (part-1 "inputs/day-1.txt") 984 "part 1")
