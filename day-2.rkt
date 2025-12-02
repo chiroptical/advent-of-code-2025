@@ -28,7 +28,6 @@
 
 (trace seq-eq?)
 
-; TODO: This is not sufficiently lazy
 (define (all-equal seq)
   (define heads (repeat (first seq)))
   (define tails (rest seq))
@@ -62,15 +61,14 @@
 (module+ test
   (require rackunit)
 
-  ; (check-equal? (mk-range "11-13") '(11 12 13))
-  ; (check-equal? (part-1? 11) #t)
-  ; (check-equal? (part-1? 101) #f)
+  (check-equal? (mk-range "11-13") '(11 12 13))
+  (check-equal? (part-1? 11) #t)
+  (check-equal? (part-1? 101) #f)
 
-  ; (check-equal? (part-2? 2121212121) #t)
+  (check-equal? (part-2? 2121212121) #t)
   (check-equal? (part-2? 212121212) #f)
 
-  ; (check-equal? (part-1 "inputs/day-2-test.txt") 1227775554)
-  ; (check-equal? (part-1 "inputs/day-2.txt") 19386344315)
-  ; (check-equal? (part-2 "inputs/day-2-test.txt") 4174379265)
-  ; (check-equal? (part-2 "inputs/day-2.txt") 34421651192)
-  )
+  (check-equal? (part-1 "inputs/day-2-test.txt") 1227775554)
+  (check-equal? (part-1 "inputs/day-2.txt") 19386344315)
+  (check-equal? (part-2 "inputs/day-2-test.txt") 4174379265)
+  (check-equal? (part-2 "inputs/day-2.txt") 34421651192))
