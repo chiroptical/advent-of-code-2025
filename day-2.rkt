@@ -20,13 +20,8 @@
   (define snd-half (substring s m))
   (equal? fst-half snd-half))
 
-(define (eq? x y)
-  (equal? (sequence->list* x) (sequence->list* y)))
-
 (define (seq-eq? heads tails)
-  (for/sequence ([h heads] [t tails]) (eq? h t)))
-
-(trace seq-eq?)
+  (for/sequence ([h heads] [t tails]) (equal? (sequence->list* h) (sequence->list* t))))
 
 (define (all-equal seq)
   (define heads (repeat (first seq)))
@@ -46,15 +41,16 @@
   (define lines (file->lines file))
   (define ranges (csv (first lines)))
   (define futs
-    (for*/list ([range ranges]
-                [id (mk-range range)])
-      (future (thunk (if (is-inv? id) id 0)))))
+    (for/list ([range ranges])
+      (define ids (mk-range range))
+      (future (thunk (filter is-inv? ids)))))
   (for/fold ([acc 0]) ([fut futs])
-    (+ acc (touch fut))))
+    (+ acc (foldl + 0 (touch fut)))))
 
 (define (part-1 file)
   (solve part-1? file))
 
+; TODO: Pretty slow, ~135 seconds
 (define (part-2 file)
   (solve part-2? file))
 
