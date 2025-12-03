@@ -5,7 +5,15 @@
          point
          add-points
          render-mat
-         char->number)
+         char->number
+         chunks-of
+         sliding
+         defn
+         cases)
+
+(define-syntax defn (make-rename-transformer #'define))
+
+(define-syntax cases (make-rename-transformer #'define/match))
 
 (define (csv in)
   (string-split in ","))
@@ -40,6 +48,21 @@
   [(#\7) 7]
   [(#\8) 8]
   [(#\9) 9])
+
+(define (chunks-of lst k)
+  (sliding lst k k))
+
+(define (sliding lst size [step 1])
+  (cond
+    [(> step (length lst)) (error "step has to be equal to or smaller than length of the list")]
+    [(= step (length lst)) (list lst)]
+    [(let recur ([lst lst]
+                 [len (length lst)])
+       (if (>= size len)
+           (if (empty? lst)
+               empty
+               (list lst))
+           (cons (take lst size) (recur (drop lst step) (- len step)))))]))
 
 (module+ test
   (require rackunit)

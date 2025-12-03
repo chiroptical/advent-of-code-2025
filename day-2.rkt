@@ -2,29 +2,25 @@
 
 (provide part-1)
 
-(require data/collection
-         "util.rkt"
+(require "util.rkt"
          racket/trace)
 
-; TODO: macro which makes define -> dfn, match-define -> cases
+(defn (mk-range s)
+      (match-define (cons begin (cons end _)) (string-split s "-"))
+      (inclusive-range (string->number begin) (string->number end)))
 
-(define (mk-range s)
-  (match-define (cons begin (cons end _)) (string-split s "-"))
-  (inclusive-range (string->number begin) (string->number end)))
+(defn (part-1? n)
+      (defn s (number->string n))
+      (defn l (string-length s))
+      (defn m (quotient l 2))
+      (defn fst-half (substring s 0 m))
+      (defn snd-half (substring s m))
+      (equal? fst-half snd-half))
 
-(define (part-1? n)
-  (define s (number->string n))
-  (define l (string-length s))
-  (define m (quotient l 2))
-  (define fst-half (substring s 0 m))
-  (define snd-half (substring s m))
-  (equal? fst-half snd-half))
-
-; TODO: Really slow due to sequence->list
-(define (all-equal seq)
-  (define hd (sequence->list (first seq)))
-  (for/and ([tl (rest seq)])
-    (equal? hd (sequence->list tl))))
+(define (all-equal ls)
+  (define hd (first ls))
+  (for/and ([tl (rest ls)])
+    (equal? hd tl)))
 
 (define (part-2? n)
   (define s (number->string n))
@@ -33,8 +29,7 @@
   (define m (+ 1 (quotient l 2)))
   (for/fold ([is-invalid #f]) ([w (in-range 1 m)])
     #:break is-invalid
-    (define seq (chunk w sl))
-    (all-equal seq)))
+    (all-equal (chunks-of sl w))))
 
 (define (solve is-inv? file)
   (define lines (file->lines file))
