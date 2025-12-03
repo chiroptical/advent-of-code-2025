@@ -20,21 +20,20 @@
   (define snd-half (substring s m))
   (equal? fst-half snd-half))
 
-(define (seq-eq? heads tails)
-  (for/sequence ([h heads] [t tails]) (equal? (sequence->list* h) (sequence->list* t))))
-
+; TODO: Really slow due to sequence->list
 (define (all-equal seq)
-  (define heads (repeat (first seq)))
-  (define tails (rest seq))
-  (andmap identity (seq-eq? heads tails)))
+  (define hd (sequence->list (first seq)))
+  (for/and ([tl (rest seq)])
+    (equal? hd (sequence->list tl))))
 
 (define (part-2? n)
   (define s (number->string n))
+  (define sl (string->list s))
   (define l (string-length s))
   (define m (+ 1 (quotient l 2)))
   (for/fold ([is-invalid #f]) ([w (in-range 1 m)])
     #:break is-invalid
-    (define seq (chunk w (string->list s)))
+    (define seq (chunk w sl))
     (all-equal seq)))
 
 (define (solve is-inv? file)
@@ -50,7 +49,6 @@
 (define (part-1 file)
   (solve part-1? file))
 
-; TODO: Pretty slow, ~135 seconds
 (define (part-2 file)
   (solve part-2? file))
 
