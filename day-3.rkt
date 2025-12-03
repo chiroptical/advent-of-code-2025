@@ -2,19 +2,6 @@
 
 (require "util.rkt")
 
-(define (max-by f xs)
-  (for/fold ([to-return #f]
-             [max-val #f]
-             #:result to-return)
-            ([x xs])
-    (define fx (f x))
-    (match max-val
-      [#f (values x fx)]
-      [_
-       (if (> fx max-val)
-           (values x fx)
-           (values to-return max-val))])))
-
 (define (list->number xs)
   (define rev (reverse xs))
   (for/fold ([acc 0]

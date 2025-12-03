@@ -9,7 +9,8 @@
          chunks-of
          sliding
          defn
-         cases)
+         cases
+         max-by)
 
 (define-syntax defn (make-rename-transformer #'define))
 
@@ -27,15 +28,12 @@
   [((point x1 x2) (point y1 y2)) (point (+ x1 y1) (+ x2 y2))])
 
 (define (render-mat mat dims)
-  (match dims
-    [(point rows cols)
-     (for* ([r rows]
-            [c cols])
-       (let ([display-char (if (set-member? mat (point r c)) #\X #\.)])
-         (display display-char)
-         (if (= c (- cols 1))
-             (display "\n")
-             #f)))]))
+  (match-define (point rows cols) dims)
+  (for* ([r rows]
+         [c cols])
+    (define display-char (if (set-member? mat (point r c)) #\X #\.))
+    (display display-char)
+    (and (= c (- cols 1)) (display "\n"))))
 
 (define/match (char->number _c)
   [(#\0) 0]
@@ -64,6 +62,19 @@
                empty
                (list lst))
            (cons (take lst size) (recur (drop lst step) (- len step)))))]))
+
+(define (max-by f xs)
+  (for/fold ([to-return #f]
+             [max-val #f]
+             #:result to-return)
+            ([x xs])
+    (define fx (f x))
+    (match max-val
+      [#f (values x fx)]
+      [_
+       (if (> fx max-val)
+           (values x fx)
+           (values to-return max-val))])))
 
 (module+ test
   (require rackunit)
