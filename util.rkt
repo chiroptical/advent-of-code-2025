@@ -52,6 +52,7 @@
 (define (chunks-of lst k)
   (sliding lst k k))
 
+; Borrowed from https://github.com/codereport/racket-algorithms/blob/3305cdf0d3034493801216af101519fd885dc731/main.rkt#L104-L115
 (define (sliding lst size [step 1])
   (cond
     [(> step (length lst)) (error "step has to be equal to or smaller than length of the list")]
