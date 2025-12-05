@@ -1,44 +1,46 @@
 #lang racket
 
-(define/match (range-check _r _x)
-  [((range start end) x) (and (>= x start) (<= x end))])
-
-(struct range (start end) #:transparent)
-
-(define (or-ranges ranges x)
-  (ormap (lambda (r) (range-check r x)) ranges))
+(require data/integer-set)
 
 (struct ingredients (fresh available) #:transparent)
 
 (define (read-ingredients file)
   (define lines (file->lines file))
   (match-define-values (fresh available _)
-    (for/fold ([fresh (list)]
+    (for/fold ([fresh (make-range)]
                [available (set)]
                [mode 'ranges])
               ([l lines])
       (match mode
         ['ranges
-         (if (string=? "" l)
-             (values fresh available 'value)
-             (let ([sp (string-split l "-")])
-               (match sp
-                 [(list b e)
-                  (values (cons (range (string->number b) (string->number e)) fresh)
-                          available
-                          mode)])))]
-        ['value (let ([x (string->number l)]) (values fresh (set-add available x) mode))])))
+         #:when (string=? "" l)
+         (values fresh available 'value)]
+        ['ranges
+         (define sp (string-split l "-"))
+         (match-define (list b e) sp)
+         (define rng (make-range (string->number b) (string->number e)))
+         (values (union rng fresh) available mode)]
+        ['value
+         (define x (string->number l))
+         (values fresh (set-add available x) mode)])))
   (ingredients fresh available))
 
 (define (part-1 file)
   (match-define (ingredients fresh available) (read-ingredients file))
-  (for/fold ([acc 0]) ([a available])
-    (if (or-ranges fresh a)
-        (+ 1 acc)
-        acc)))
+  (for/fold ([acc 0])
+            ([a available]
+             #:when (member? a fresh))
+    (+ 1 acc)))
+
+(define (part-2 file)
+  (match-define (ingredients fresh _available) (read-ingredients file))
+  (count fresh))
 
 (module+ test
   (require rackunit)
 
   (check-equal? (part-1 "inputs/day-5-test.txt") 3)
-  (check-equal? (part-1 "inputs/day-5.txt") 517))
+  (check-equal? (part-1 "inputs/day-5.txt") 517)
+
+  (check-equal? (part-2 "inputs/day-5-test.txt") 14)
+  (check-equal? (part-2 "inputs/day-5.txt") 336173027056994))
