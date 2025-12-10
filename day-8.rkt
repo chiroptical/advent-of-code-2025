@@ -4,7 +4,8 @@
   (define lines (file->lines file))
   (for/fold ([junctions (list)]) ([l lines])
     (match-define (list x y z) (string-split l ","))
-    (cons (junction (string->number x) (string->number y) (string->number z)) junctions)))
+    (cons (junction (string->number x) (string->number y) (string->number z))
+          junctions)))
 
 (struct junction (x y z) #:transparent)
 
@@ -25,20 +26,13 @@
         [(list #t #t) (values (cons s pass) x-set y-set)]
         [(list #t _) (values pass s y-set)]
         [(list _ #t) (values pass x-set s)]
-        [_ (values (cons s pass) x-set y-set)])))
+        [(list #f #f) (values (cons (set x y) (cons s pass)) x-set y-set)])))
   (match (list found-x found-y)
     [(list #f #f) passthrough]
     [(list _ #f) (cons (set-add found-x y) passthrough)]
     [(list #f _) (cons (set-add found-y x) passthrough)]
     [(list _ _) (cons (set-union found-x found-y) passthrough)]))
 
-; TODO:
-; - gather all length 2 permutations
-; - sort by their distances
-; - fold
-;   * acc - empty list of sets of junctions
-;   * zip (in-range n) distances
-;   * next
 (define (part-1 file n)
   (define junctions (parse file))
   (define sorted-pairs
@@ -49,21 +43,20 @@
             (< (distance x y) (distance m n)))))
   (define final-junctions
     (for/fold ([acc (list)])
-              ([_ (in-range n)]
+              ([idx (in-range (+ 1 n))]
                [pair sorted-pairs])
+      (println idx)
       (match-define (list x y) pair)
       (if (empty? acc)
           (list (set x y))
           (next x y acc))))
-  (println final-junctions)
-  0
-  ;(define sizes (sort (map set-count final-junctions)))
-  ;(foldl + 0 (take sizes 3)
-  )
+  (define sizes (sort (map set-count final-junctions) >))
+  (foldl * 1 (take sizes 3)))
 
 (module+ test
   (require rackunit)
 
   (check-equal? (part-1 "inputs/day-8-test.txt" 10) 40)
+  ; TODO: Computationally impossible...
   ; (check-equal? (part-1 "inputs/day-8.txt" 1000) 0)
   )
