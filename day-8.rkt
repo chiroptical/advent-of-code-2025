@@ -33,30 +33,35 @@
     [(list #f _) (cons (set-add found-y x) passthrough)]
     [(list _ _) (cons (set-union found-x found-y) passthrough)]))
 
+(require graph)
+
+(define (compare a b)
+  (match-define (list x y) a)
+  (match-define (list m n) b)
+  (< (distance x y) (distance m n)))
+
+(require data/heap)
+
 (define (part-1 file n)
   (define junctions (parse file))
-  (define sorted-pairs
-    (sort (combinations junctions 2)
-          (lambda (a b)
-            (match-define (list x y) a)
-            (match-define (list m n) b)
-            (< (distance x y) (distance m n)))))
-  (define final-junctions
-    (for/fold ([acc (list)])
-              ([idx (in-range (+ 1 n))]
-               [pair sorted-pairs])
-      (println idx)
-      (match-define (list x y) pair)
-      (if (empty? acc)
-          (list (set x y))
-          (next x y acc))))
-  (define sizes (sort (map set-count final-junctions) >))
+
+  ; heap is binary tree where insertions of nodes
+  ; maintain the comparison function you provide.
+  ; In this case, we want to order by minimum distance
+  (define sorted-pairs (make-heap compare))
+  (for ([junction (in-combinations junctions 2)])
+    (heap-add! sorted-pairs junction))
+
+  (define g (unweighted-graph/undirected '()))
+  (for ([_idx (in-range n)]
+        [pair (in-heap sorted-pairs)])
+    (match-define (list x y) pair)
+    (add-edge! g x y))
+  (define sizes (sort (map set-count (cc g)) >))
   (foldl * 1 (take sizes 3)))
 
 (module+ test
   (require rackunit)
 
   (check-equal? (part-1 "inputs/day-8-test.txt" 10) 40)
-  ; TODO: Computationally impossible...
-  ; (check-equal? (part-1 "inputs/day-8.txt" 1000) 0)
-  )
+  (check-equal? (part-1 "inputs/day-8.txt" 1000) 24360))
